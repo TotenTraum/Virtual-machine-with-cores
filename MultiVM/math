@@ -1,0 +1,565 @@
+f __One__ 1;
+f __Zero__ 0;
+
+;//////////////////////////////////////////////
+; fn pow(int a, int n) -> int
+;            n
+; return  (a)
+;//////////////////////////////////////////////
+l pow:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[1]; сохраняем значение r1 в стеке
+	c stf;
+	c top r[1], r[7:2]; n 
+
+	c mov r[0], 1;
+
+	c cmpi r[1], 0;
+	c je LABEL_END_WHILE_POW_1;
+
+
+	c top r[0], r[7:3]; a
+	c top r[2], r[7:3]; a
+
+	c deci r[1];
+	
+l WHILE_n__not_equal_0_1:			;while (n != 0)
+	c cmpi r[1], 0; 				;{
+	c jle LABEL_END_WHILE_POW_1;  	;
+									;
+	c muli r[0],r[2];				;  r0*= a
+									;
+	c deci r[1];					;
+	c jump WHILE_n__not_equal_0_1;	;
+	  								;
+l LABEL_END_WHILE_POW_1:			;}
+	
+	c pop r[1];
+	c pop r[2];
+	c pop r[7];
+
+	c rtn 2
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn powf(float a, int n) -> float
+;            n
+; return  (a)
+;//////////////////////////////////////////////
+l POW:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[1]; сохраняем значение r1 в стеке
+
+	c top r[1], r[7:2]; n 
+
+	c mov r[0], __One__;
+
+	c cmpi r[1], 0;
+	c je LABEL_END_WHILE_POW_3;
+
+	c top r[0], r[7:3]; a
+	c top r[2], r[7:3]; a
+
+	c deci r[1];
+
+l WHILE_n__not_equal_0_3:			;while (n != 0)
+	c cmpi r[1], 0; 			;{
+	c jle LABEL_END_WHILE_POW_3;  	;
+									;
+	c mulf r[0],r[2];				;  r0*= a
+									;
+	c deci r[1];					;
+	c jump WHILE_n__not_equal_0_3;	;
+	  								;
+l LABEL_END_WHILE_POW_3:			;}
+
+	c pop r[1];
+	c pop r[2];
+	c pop r[7];
+
+	c rtn 2
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+;	Float
+;	{
+;		int64 val		;          degree
+;		int64 degree	;  val * 10
+;	}
+;
+;//////////////////////////////////////////////
+; fn powf(Float a, int n) -> Float
+;            n
+; return  (a)  == r[0] = val, r[1] = degree
+;
+; |   stack    | 
+; |____________| |
+; |   val      | |  si + 4
+: |   degree   | |  si + 3
+; |   n        |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+;
+;//////////////////////////////////////////////
+l powf:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+	c push r[4]; сохраняем значение r4 в стеке
+	c push r[5]; сохраняем значение r5 в стеке
+
+	c top r[0], r[7:4]; val
+	c top r[1], r[7:3]; degree 
+	c top r[2], r[7:2]; n
+
+	c mov r[3], 10;
+
+	c mov r[5], r[1];
+	c cmpi r[5], 0 ;
+	jge END_IF_degree_less_0
+	c muli r[5], -1;
+	l END_IF_degree_less_0;
+
+	;c mov r[4]
+	;c deci r[5];
+	;c div
+
+	c push r[0];
+	c push r[3];
+	c push r[5];     degree
+	c call pow ; = 10
+
+	c mov r[3], r[0];
+	c pop r[0];
+	c mov r[4], r[0]; 
+
+	c deci r[2];
+
+l WHILE_n__not_equal_0_2:			;while (n != 0)
+	c cmpi r[2], 0; 				;{
+	c jle LABEL_END_WHILE_POW_2;  	;
+									;
+	c muli r[0], r[4];				;  sum*= value
+	c divi r[0], r[3]               ;  sum/= 10^degree
+
+
+	c deci r[2];					;
+	c jump WHILE_n__not_equal_0_2;	;
+	  								;
+l LABEL_END_WHILE_POW_2:			;}
+
+	c pop r[5];
+	c pop r[4];
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 3;
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn addf(Float a, Float b) -> Float
+;            
+; return  a + b  == r[0] = val, r[1] = degree
+;
+; |   stack    | 
+; |____________| |
+; |   a.val    | |  si + 5
+: |   a.degree | |  si + 4
+: |   b.val    | |  si + 3
+; |   b.degree |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l addf:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+	c push r[4]; сохраняем значение r4 в стеке
+	c push r[5]; сохраняем значение r5 в стеке
+
+	c top r[2], r[7:3]; b.val
+	c top r[3], r[7:2]; b.degree 
+	c top r[4], r[7:5]; a.val
+	c top r[5], r[7:4]; a.degree
+	
+	c cmpi r[3], r[5];							;if (b.degree > a.degree)
+	c jl ELSE_IF_b.degree_greater_a.degree_1;   ;{
+	c mov r[1], r[3]							;	 minDegree = a.degree	
+	c jump END_IF_b.degree_greater_a.degree_1;  ;}
+l ELSE_IF_b.degree_greater_a.degree_1:			;else{
+	c mov r[1], r[5]							;	 minDegree = b.degree
+l END_IF_b.degree_greater_a.degree_1:			;}
+
+	c subi r[3], r[1];
+	c subi r[5], r[1];
+
+	c push r[4];
+	c push r[5];
+	c call pow_10_n;
+	c mov r[4], r[0]; 
+
+	c push r[2];
+	c push r[3];
+	c call pow_10_n;
+	c mov r[2], r[0]; 
+
+	c mov r[0], r[2];
+	c addi r[0], r[4];
+
+	c pop r[5];
+	c pop r[4];
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 4;
+
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn subf(Float a, Float b) -> Float
+;            
+; return  a - b  == r[0] = val, r[1] = degree
+;
+; |   stack    | 
+; |____________| |
+; |   a.val    | |  si + 5
+: |   a.degree | |  si + 4
+: |   b.val    | |  si + 3
+; |   b.degree |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l subf:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+	c push r[4]; сохраняем значение r4 в стеке
+	c push r[5]; сохраняем значение r5 в стеке
+
+	c top r[2], r[7:3]; b.val
+	c top r[3], r[7:2]; b.degree 
+	c top r[4], r[7:5]; a.val
+	c top r[5], r[7:4]; a.degree
+	
+
+	c cmpi r[3], r[5];							;if (b.degree > a.degree)
+	c jl ELSE_IF_b.degree_greater_a.degree_2;   ;{
+	c mov r[1], r[3]							;	 minDegree = b.degree	
+	c jump END_IF_b.degree_greater_a.degree_2;  ;}
+l ELSE_IF_b.degree_greater_a.degree_2:			;else{
+	c mov r[1], r[5]							;	 minDegree = a.degree
+l END_IF_b.degree_greater_a.degree_2:			;}
+
+	c subi r[3], r[1];
+	c subi r[5], r[1];
+
+	c push r[4];
+	c push r[5];
+
+	c call pow_10_n;
+	c mov r[4], r[0]; 
+
+	c push r[2];
+	c push r[3];
+	c call pow_10_n;
+	c mov r[2], r[0]; 
+
+	c mov r[0], r[4];
+	c subi r[0], r[2];
+
+	c stf;
+	c ctf;
+
+	c pop r[5];
+	c pop r[4];
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 4;
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn mulf(Float a, Float b) -> Float
+;            
+; return  a * b  == r[0] = val, r[1] = degree
+;
+; |   stack    | 
+; |____________| |
+; |   a.val    | |  si + 5
+: |   a.degree | |  si + 4
+: |   b.val    | |  si + 3
+; |   b.degree |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l mulf:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+	c push r[4]; сохраняем значение r4 в стеке
+	c push r[5]; сохраняем значение r2 в стеке
+	c push r[6]; сохраняем значение r3 в стеке
+
+	c top r[2], r[7:3]; b.val
+	c top r[3], r[7:2]; b.degree 
+	c top r[4], r[7:5]; a.val
+	c top r[5], r[7:4]; a.degree
+
+
+	l WHILE_value_mod_10_equal_0_1:			;while (value % 10 == 0)
+	c mov r[6], r[2]					;
+	c mod r[6], 10						;
+	c cmpi r[6], 0; 					;{
+	c jne LABEL_END_WHILE_MUL_1;  		;
+										;
+	c divi r[2], 10;					;  value /= 10
+	c inci r[3]							;  degree++
+										;
+	c jump WHILE_value_mod_10_equal_0_1 ;
+	  									;
+l LABEL_END_WHILE_MUL_1:				;}
+
+	l LABEL_WHILE_value_mod_10_equal_0_2:			;while (value % 10 == 0)
+	c mov r[6], r[4]					;
+	c mod r[6], 10						;
+	c cmpi r[6], 0; 					;{
+	c jne LABEL_END_WHILE_MUL_2;  		;
+										;
+	c divi r[4], 10;					;  value /= 10
+	c inci r[5]							;  degree++
+										;
+	c jump LABEL_WHILE_value_mod_10_equal_0_2 ;
+	  									;
+l LABEL_END_WHILE_MUL_2:				;}
+
+
+	c clr r[1];
+	c addi r[1],r[3];
+	c addi r[1],r[5];
+	
+	c mov r[0], r[2];
+	c muli r[0], r[4];
+	
+
+l WHILE_value_mod_10_equal_0_3:			;while (value % 10 == 0)
+	c mov r[5], r[0]					;
+	c mod r[5], 10						;
+	c cmpi r[5], 0; 					;{
+	c jne LABEL_END_WHILE_MUL_3;  		;
+										;
+	c divi r[0], 10;					;  value /= 10
+	c inci r[1]							;  degree++
+										;
+	c jump WHILE_value_mod_10_equal_0_3 ;
+	  									;
+l LABEL_END_WHILE_MUL_3:				;}
+
+	c pop r[6];
+	c pop r[5];
+	c pop r[4];
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 4;
+
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn divf(Float a, Float b) -> Float
+;            
+; return  a / b  == r[0] = val, r[1] = degree
+;
+; |   stack    | 
+; |____________| |
+; |   a.val    | |  si + 5
+: |   a.degree | |  si + 4
+: |   b.val    | |  si + 3
+; |   b.degree |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l divf:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+	c push r[4]; сохраняем значение r4 в стеке
+	c push r[5]; сохраняем значение r2 в стеке
+	c push r[6]; сохраняем значение r3 в стеке
+
+	c top r[2], r[7:3]; b.val
+	c top r[3], r[7:2]; b.degree 
+	c top r[0], r[7:5]; a.val
+	c top r[1], r[7:4]; a.degree
+	
+	c stf;
+	c ctf;
+
+l WHILE_DIV_a_val_less_b_val:			;while (a.value < obj.value)
+	c cmpi r[0], r[2]; 					;{
+	c jge LABEL_END_WHILE_DIV_1;  		;
+										;
+	c muli r[0], 10;					;  a.value *= 10
+	c deci r[1]							;  a.degree--
+								;
+	c jump WHILE_DIV_a_val_less_b_val ;
+	  									;
+l LABEL_END_WHILE_DIV_1:				;}
+
+	c subi r[1], r[3];
+	c divi r[0], r[2]
+
+
+	l WHILE_value_mod_10_equal_0_2:		;while (value % 10 == 0)
+	c mov r[5], r[0]					;
+	c mod r[5], 10						;
+	c cmpi r[5], 0; 					;{
+	c jne LABEL_END_WHILE_DIV_3;  		;
+										;
+	c divi r[0], 10;					;  value /= 10
+	c inci r[1]							;  degree++
+										;
+	c jump WHILE_value_mod_10_equal_0_2 ;
+	  									;
+l LABEL_END_WHILE_DIV_3:				;}
+
+	c pop r[6];
+	c pop r[5];
+	c pop r[4];
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 4;
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn pow_10_n(int a, int degree) -> int
+;            
+; return  a * 10^degree  == r[0] = val
+;
+; |   stack    | 
+; |____________| |
+: |    val     | |  si + 3
+; |   degree   |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l pow_10_n:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+
+	c top r[3], r[7:2]; degree 
+	c top r[2], r[7:3]; a
+
+	c cmpi r[3], 0;							    ;if (degree >= 0 )
+	c jl else_if_(degree_>=_0)_1;				;{
+		c push 10;
+		c push r[3];		
+
+		c call pow;									pow(10,degree)
+		c muli r[0],r[2];								a * 10^degree
+		c jump end_if_(degree_>=_0)_1;
+l else_if_(degree_>=_0)_1:						;else{
+	c mov r[0], r[2];
+	c muli r[3], -1;
+	l while(degree_>_0):
+		c cmpi r[3], 0;
+		c jle end_while(degree_>_0);
+
+		c divi r[0], 10;
+		c deci r[3];
+
+		c jump while(degree_>_0);
+
+	l end_while(degree_>_0):
+							;}
+l end_if_(degree_>=_0)_1:
+
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 2;				
+
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn POW_10_n(float a, int degree) -> int
+;            
+; return  a * 10^degree  == r[0] = val
+;
+; |   stack    | 
+; |____________| |
+: |    val     | |  si + 3
+; |   degree   |\|/ si + 2
+; |   IP       |    si + 1
+; |   r[7]     |stack index(si) + 0
+
+;
+;//////////////////////////////////////////////
+l POW_10_n:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+	c push r[2]; сохраняем значение r2 в стеке
+	c push r[3]; сохраняем значение r3 в стеке
+
+	c top r[3], r[7:2]; degree 
+	c top r[2], r[7:3]; a
+
+	c cmpi r[3], 0;							    ;if (degree >= 0 )
+	c jl else_if_(degree_>=_0)_2;				;{
+		c push 10;
+		c push r[3];
+		c call POW;										pow(10,degree)
+		c mulf r[0],r[2];								a * 10^degree
+		c jump end_if_(degree_>=_0)_2;
+l else_if_(degree_>=_0)_2:						;else{
+	c mov r[0], r[2];
+	c muli r[3], -1;
+	l while(degree_>_0)_1:
+		c cmpi r[3], 0;
+		c jle end_while(degree_>_0)_1;
+
+		c divf r[0], mem[tenf];
+		c deci r[3];
+
+		c jump while(degree_>_0)_1;
+
+	l end_while(degree_>_0)_1:
+							;}
+l end_if_(degree_>=_0)_2:
+
+	c pop r[3];
+	c pop r[2];
+	c pop r[7];
+	c rtn 2;				
+;//////////////////////////////////////////////
+; END_FUNCTION
+;//////////////////////////////////////////////

@@ -1,0 +1,31 @@
+o 100;
+i monthly 1000;
+i tmp 1200;
+i N 60;
+
+#include io
+
+;//////////////////////////////////////////////
+; 		fn main()
+;//////////////////////////////////////////////
+l __start:
+	;c stf 
+
+	;c push mem[N];
+	c push 1001000;
+	c push -5;
+	c push 120000;
+	c push -1;
+
+	c call divf;
+	
+	c stf;
+	c ctf;	
+
+	c push 1; 
+	c write r[0];
+	c push 1; 
+	c write r[1];
+
+l end_program:
+	c stop;

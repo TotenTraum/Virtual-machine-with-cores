@@ -1,0 +1,175 @@
+o 100;
+i N 60;
+;i N 36;
+i monthly 10;
+;i monthly 20;
+
+i r.val 0;
+i r.degree 0;
+
+i sum.val 0;
+i sum.degree 0;
+
+i allsum.val 0;
+i allsum.degree 0;
+
+f ten 10; 
+i error 12
+
+
+#include io
+
+;//////////////////////////////////////////////
+; 		fn main()
+;//////////////////////////////////////////////
+l __start:
+	
+	c mov r[0], mem[monthly];
+	c muli r[0], 10000000
+	c push r[0];
+	c push -7;
+	c push 12;
+	c push 2;
+	c call divf; monthly / (12 * 100)
+	
+	c mov mem[r.val], r[0];
+	c mov mem[r.degree], r[1];
+
+	c push mem[error];
+	c call readFloat;	  // sum
+
+	c mov mem[sum.val],r[0];
+	c mov mem[sum.degree],r[1];
+
+	c cmpi r[0], 0;
+
+	
+	c jle end_program;
+	;c ctf;
+	
+
+	c push mem[sum.val];
+	c push mem[sum.degree];
+	c push mem[r.val];
+	c push mem[r.degree];
+	c push mem[N];
+	c call monthly_pay;
+
+
+	c mov mem[allsum.val], r[0];
+	c mov mem[allsum.degree], r[1];
+
+	;c mov r[5], mem[N];
+	;c push r[5];
+	;c push 5;
+	;c call pow_10_n;
+	
+
+	c push mem[sum.val];
+	c push mem[sum.degree];
+	c push mem[N]; 
+	c push 0;
+	c call mulf; месячная плата * n
+
+
+	c push r[0];
+	c push r[1];
+	c push mem[allsum.val];
+	c push mem[allsum.degree];
+
+	c call subf;
+
+	c push r[0]; 
+	c push r[1]; 
+	c call writeFloat;
+
+l end_program:
+	c stop;
+
+;///////////////////////////////////////////////
+;//////////////////////////////////////////////
+; fn mountly_pay(Float sum, Float r, int n) -> int 
+; |   stack    | 
+; |____________| |
+; |  sum.val   | |  si + 6
+; |  sum.degree| |  si + 5
+: |  r.val     | |  si + 4
+; |  r.degree  | |  si + 3
+; |  n         |\|/ si + 2
+; |  IP        |    si + 1
+; |  r[7]      |stack index(si) + 0
+
+; return r[0] - val, r[1] - degree
+;//////////////////////////////////////////////
+l monthly_pay:
+	c push r[7]; сохраняем значение r7 в стеке
+	c si r[7]; записываем индекс стека в r7
+
+	c top r[2], r[7:4]; r.val
+	c top r[3], r[7:3]; r.degree	
+
+	c push 10000000;
+	c push -7;
+	c push r[2];
+	c push r[3];
+	c call addf; (1 + r)
+
+	c push r[0];
+	c push r[1];
+	c top r[1], r[7:2]; n
+	c push r[1];
+	c call powf; (1 + r)^n
+	;c stf;
+	;c ctf;
+
+	c mov r[2], r[0];
+	c mov r[3], r[1];
+
+	c top r[4], r[7:4]; r.val
+	c top r[5], r[7:3]; r.degree
+
+	c push r[4];
+	c push r[5];
+	c push r[0];
+	c push r[1];
+	c call mulf; r * (1 + r)^n
+
+	;c stf;
+	;c ctf;
+
+
+	c push r[0];
+	c push r[1];
+
+	c push r[2];
+	c push r[3];
+	c push 10000000;
+	c push -7;
+	c call subf; (1 + r)^n - 1
+
+
+	c mov r[2], r[0];
+	c mov r[3], r[1];
+
+	c pop r[1];
+	c pop r[0];
+
+	c push r[0];
+	c push r[1];
+	c push r[2];
+	c push r[3];
+	c call divf; K = (r * (1+r)^n)/((1+r)^n - 1)
+
+
+	c top r[2], r[7:6]; sum.val
+	c top r[3], r[7:5]; sum.degree
+
+	c push r[2];
+	c push r[3];
+	c push r[0];
+	c push r[1];
+	c call divf; sum / K
+
+
+	c pop r[7]; возвращаем значение r7 из стека
+	c rtn 5; 
